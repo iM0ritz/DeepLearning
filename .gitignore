@@ -1,0 +1,8 @@
+# data directory
+data/
+
+# macos files
+.DS_Store
+
+# trained models
+*.keras
