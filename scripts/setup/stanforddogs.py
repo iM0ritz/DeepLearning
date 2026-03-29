@@ -3,14 +3,13 @@ import numpy as np
 import keras
 from keras import layers
 from tensorflow import data as tf_data
-from keras.callbacks import CSVLogger
 import sys
 
 data_dir = os.path.join(sys.argv[1])
 print("Found data directory with:", os.listdir(data_dir))
 
 num_skipped = 0
-for folder_name in ("Cat", "Dog"):
+for folder_name in os.listdir(data_dir):
     folder_path = os.path.join(data_dir, folder_name)
     for fname in os.listdir(folder_path):
         fpath = os.path.join(folder_path, fname)
@@ -24,7 +23,8 @@ for folder_name in ("Cat", "Dog"):
             num_skipped += 1
             # Delete corrupted image
             os.remove(fpath)
-print("Images deleted:", num_skipped)
+
+print(f"Deleted {num_skipped} images.")
 
 image_size = (180, 180)
 batch_size = 32
@@ -103,10 +103,12 @@ def make_model(input_shape, num_classes):
 
 
 model = make_model(input_shape=image_size + (3,), num_classes=2)
+keras.utils.plot_model(model, show_shapes=True)
+
 epochs = 25
+
 callbacks = [
     keras.callbacks.ModelCheckpoint("save_at_{epoch}.keras"),
-    CSVLogger("training_log.csv", append=True)
 ]
 model.compile(
     optimizer=keras.optimizers.Adam(1e-4),
