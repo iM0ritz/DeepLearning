@@ -4,5 +4,6 @@ data/
 # macos files
 .DS_Store
 
-# trained models
+# ignore all keras files except model.keras
 *.keras
+!model.keras

@@ -6,7 +6,9 @@ from tensorflow import data as tf_data
 import sys
 
 data_dir = os.path.join(sys.argv[1])
-print("Found data directory with:", os.listdir(data_dir))
+classes = os.listdir(data_dir)
+stanford_num_classes = len(classes)
+print("Found data directory with", stanford_num_classes, "classes:", classes)
 
 num_skipped = 0
 for folder_name in os.listdir(data_dir):
@@ -102,8 +104,7 @@ def make_model(input_shape, num_classes):
     return keras.Model(inputs, outputs)
 
 
-model = make_model(input_shape=image_size + (3,), num_classes=2)
-keras.utils.plot_model(model, show_shapes=True)
+model = make_model(input_shape=image_size + (3,), num_classes=stanford_num_classes)
 
 epochs = 25
 
@@ -112,12 +113,12 @@ callbacks = [
 ]
 model.compile(
     optimizer=keras.optimizers.Adam(1e-4),
-    loss=keras.losses.BinaryCrossentropy(from_logits=True),
-    metrics=[keras.metrics.BinaryAccuracy(name="acc")],
+    loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+    metrics=[keras.metrics.SparseCategoricalAccuracy(name="acc")],
 )
 model.fit(
     train_ds,
     epochs=epochs,
     callbacks=callbacks,
-    validation_data=val_ds,
+    validation_data=val_ds
 )
