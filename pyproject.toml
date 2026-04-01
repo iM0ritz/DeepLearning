@@ -3,10 +3,9 @@ name = "deeplearning"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.13"
-dependencies = [
-    "jupyter>=1.1.1",
-    "matplotlib>=3.10.8",
-    "numpy>=2.4.3",
-    "tensorflow>=2.21.0",
+requires-python = ">=3.10,<3.11" # matches the python version on the compute server
+dependencies = [ # dependencies also configured to match server versions. this makes it easier to save models on server and load them here.
+    "keras==2.14.0",
+    "numpy<2.0",
+    "tensorflow==2.14.0",
 ]
