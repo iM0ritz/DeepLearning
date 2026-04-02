@@ -73,7 +73,7 @@ epochs = 50
 callbacks = [
     keras.callbacks.ModelCheckpoint("save_at_{epoch}.keras"),
 ]
-model.fit(
+new_model.fit(
     train_ds,
     epochs=epochs,
     callbacks=callbacks,
