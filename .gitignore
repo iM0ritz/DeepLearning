@@ -9,3 +9,18 @@ data/
 # ignore all keras files except model.keras
 *.keras
 !model.keras
+
+# ignore core latex/pdflatex auxiliary files:
+*.aux
+*.lof
+*.log
+*.lot
+*.fls
+*.out
+*.toc
+*.fmt
+*.fot
+*.cb
+*.cb2
+.*.lb
+*.synctex.gz

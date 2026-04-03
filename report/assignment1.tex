@@ -1,0 +1,151 @@
+% This is a template for the assignment reports
+% TARI29 Artificial Intelligence, 7.5 credits, Winter 2024
+% Original version by:  Vladimir Tarasov, 2024
+% Revised by:           Alexandros Tzanetos, 2024 
+
+% Use a modern class instead of an old article class
+\documentclass{scrartcl}
+
+\KOMAoptions{
+    parskip=half,  % full, off
+    fontsize=12pt, % base font size (10pt default)
+    % headings=big,% small/normal/big headings (normal is default), 
+    % paper=a5,    % paper format (a4 default) 
+    pagesize=auto  % Use paper format for PDF too
+}
+
+% ---------------------- Report details --------------------- %
+\newcommand{\docauthor}{Ben Bekir Ertugrul, Moritz Schlitter}
+\newcommand{\courseyear}{2026}
+\newcommand{\coursename}{TDIS22 Deep Learning}
+\newcommand{\coursecredits}{7.5 credits}
+\newcommand{\fullcoursename}{\coursename, \coursecredits}
+\newcommand{\termname}{Spring \courseyear}
+\newcommand{\groupnumber}{?}
+\newcommand{\reportname}{Assignment 1 Report: Cats and Dogs Classification}
+\newcommand{\assignmentname}{Group \groupnumber\ Assignment Report}
+% ------------------ End of report details ------------------ %
+
+
+
+% ---------- Setting up properties of the PDF file ---------- %
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    allcolors=blue,
+    pdftitle={\reportname},
+    pdfauthor={Name1, Name2},
+    pdfsubject={\coursename, \termname}
+	% pdfpagemode=FullScreen,
+	% pdfpagemode= UseOutlines % the default if present
+}
+% ------------ End of properties of the PDF file ------------ %
+
+
+
+% ----------- Setting up the headers and footers ------------ %
+\usepackage{scrlayer-scrpage}
+\pagestyle{scrheadings}
+\KOMAoptions{% 
+    headsepline,% line below the header
+    plainheadsepline,% also on scrplain
+}
+\clearscrheadfoot % Erase all current configurations
+% inner part of the header [titel_page]{other_pages}
+\ihead[\coursename, \courseyear]{\coursename, \courseyear}
+% outer part of the header [titel_page]{other_pages}
+\ohead{\assignmentname}
+% center part of the footer [titel_page]{other_pages}
+\cfoot[\textup{Page \pagemark\ of \ztotpages}]{\textup{Page \pagemark\ of \ztotpages}}
+% ------------- End of the headers and footers -------------- %
+
+
+
+% ---------------- Setting up the title page ---------------- %
+\title{\reportname}
+\subtitle{\assignmentname}
+%\author{\docauthor}
+\author{Ben Bekir Ertugrul \and Moritz Schlitter
+}
+\date{\today}
+% ------------------ End of the title page ------------------ %
+
+\usepackage[english]{babel}
+
+% --------------- Packages and custom commands -------------- %
+% Specify the input encoding of the source file as UTF8 
+\usepackage[utf8]{inputenc}
+% The T1 font encoding is an 8-bit encoding and fully supports words containing accented characters
+\usepackage[T1]{fontenc}
+% Load Latin modern fonts in outline format
+\usepackage{lmodern}
+% Load better typewriter font
+\usepackage{inconsolata}
+% For better hyphenation patterns
+\usepackage[english]{babel}
+% For improved micro-typography
+\usepackage{microtype}
+% Switch off extra space after a sentence
+\frenchspacing
+% To be able to iclude pictures
+\usepackage{graphicx}
+\usepackage{adjustbox}
+\usepackage{subcaption}
+\usepackage{zref-totpages} % To get the total number of pages
+\usepackage{mathtools,amsmath} % for advanced math formulas
+ % To highlight source code
+\usepackage{minted}
+% Default options for all minted environments
+\setminted{
+           style=default, % for minted envronment
+           autogobble, % automatically remove all common leading whitespace
+           xleftmargin=10pt, % indentation to add (on the left) before the listing
+           numbersep=6pt, % gap between numbers and start of line
+           linenos, % enables line numbers
+           mathescape % enables the usual math mode inside comments
+}
+\setmintedinline[c]{style=default} % for minted inlines
+% Flexible handling of verbatim text
+\usepackage{fancyvrb}
+% For well-spaced lines and guidelines in tables
+\usepackage{booktabs}
+% To typeset algorithms or pseudocode in LaTeX 
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+% For plots and graphs
+\usepackage{pgfplots}
+\pgfplotsset{width=10cm,compat=1.9}
+% for quotes " " with \enquote{text}
+\usepackage{csquotes}
+% for \begin{enumerate}[resume] to work. resumes counting instead of starting from 1 again.
+\usepackage{enumitem}
+
+% To generate placeholder text - can be deleted when you have written real text
+\usepackage{lipsum}
+% ----------- End of packages and custom commands ----------- %
+
+\begin{document}
+
+\maketitle
+
+% It can be commented out if you do not want the table of contents
+\pagebreak
+% \tableofcontents
+% \pagebreak
+
+% \include{introduction}
+% \include{preprocessing}
+% \include{models}
+% %\include{results}
+
+% \bibliographystyle{ieeetr}
+% %\bibliography{references}
+
+% \appendix 
+% \include{appendix}
+\section{Results}
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam at aliquet ex. Nullam commodo ligula at ultricies consequat. Cras felis tellus, semper accumsan maximus sit amet, mollis sit amet sapien. Pellentesque mattis pretium velit, non tempor orci laoreet eget. Quisque molestie risus ipsum, a dapibus nunc euismod nec. Praesent suscipit ac lacus dapibus tempus. Nulla ultrices sapien ac est ornare feugiat. Aliquam sapien nisi, sollicitudin id libero nec, varius tempus ex. Donec nec luctus orci. Duis ullamcorper nulla non lobortis congue. Donec vestibulum ex vel interdum viverra. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla cursus nisl metus, eu pellentesque ligula egestas eu. Curabitur eleifend lorem ut euismod eleifend. Vivamus ultrices ex ac gravida dictum. 
+\section{Discussion}
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam at aliquet ex. Nullam commodo ligula at ultricies consequat. Cras felis tellus, semper accumsan maximus sit amet, mollis sit amet sapien. Pellentesque mattis pretium velit, non tempor orci laoreet eget. Quisque molestie risus ipsum, a dapibus nunc euismod nec. Praesent suscipit ac lacus dapibus tempus. Nulla ultrices sapien ac est ornare feugiat. Aliquam sapien nisi, sollicitudin id libero nec, varius tempus ex. Donec nec luctus orci. Duis ullamcorper nulla non lobortis congue. Donec vestibulum ex vel interdum viverra. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla cursus nisl metus, eu pellentesque ligula egestas eu. Curabitur eleifend lorem ut euismod eleifend. Vivamus ultrices ex ac gravida dictum. 
+
+\end{document}
