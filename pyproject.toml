@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.10,<3.11" # matches the python version on the compute server
 dependencies = [ # dependencies also configured to match server versions. this makes it easier to save models on server and load them here.
     "keras==2.14.0",
+    "matplotlib>=3.10.8",
     "numpy<2.0",
     "tensorflow==2.14.0",
 ]

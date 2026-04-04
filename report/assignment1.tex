@@ -144,8 +144,29 @@
 % \appendix 
 % \include{appendix}
 \section{Results}
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam at aliquet ex. Nullam commodo ligula at ultricies consequat. Cras felis tellus, semper accumsan maximus sit amet, mollis sit amet sapien. Pellentesque mattis pretium velit, non tempor orci laoreet eget. Quisque molestie risus ipsum, a dapibus nunc euismod nec. Praesent suscipit ac lacus dapibus tempus. Nulla ultrices sapien ac est ornare feugiat. Aliquam sapien nisi, sollicitudin id libero nec, varius tempus ex. Donec nec luctus orci. Duis ullamcorper nulla non lobortis congue. Donec vestibulum ex vel interdum viverra. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla cursus nisl metus, eu pellentesque ligula egestas eu. Curabitur eleifend lorem ut euismod eleifend. Vivamus ultrices ex ac gravida dictum. 
-\section{Discussion}
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam at aliquet ex. Nullam commodo ligula at ultricies consequat. Cras felis tellus, semper accumsan maximus sit amet, mollis sit amet sapien. Pellentesque mattis pretium velit, non tempor orci laoreet eget. Quisque molestie risus ipsum, a dapibus nunc euismod nec. Praesent suscipit ac lacus dapibus tempus. Nulla ultrices sapien ac est ornare feugiat. Aliquam sapien nisi, sollicitudin id libero nec, varius tempus ex. Donec nec luctus orci. Duis ullamcorper nulla non lobortis congue. Donec vestibulum ex vel interdum viverra. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla cursus nisl metus, eu pellentesque ligula egestas eu. Curabitur eleifend lorem ut euismod eleifend. Vivamus ultrices ex ac gravida dictum. 
 
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=\columnwidth]{resources/logs.png}}
+\caption{Training and validation loss for all experiments.}
+\label{fig:results}
+\end{figure}
+
+\subsection{Experiment 1}
+The first experiment concerns itself with the training of a simple CNN model used for binary classification of cat and dog images. This sets a baseline performance for the following experiments, which make use of transfer learning.
+
+The top left plot in Figure \ref{fig:results} visualizes the training process of this experiment. In epoch 1, the model achieves a training loss of about 0.5855. The loss gradually decreases until the last epoch, where it ends up at 0.1031. The validation loss starts at 0.8795, then reaches 0.2780 in epoch 5, and finally zig-zags with a slight downwards trend before it ends up at 0.1312 in epoch 25.
+
+\subsection{Experiment 2}
+The model for experiment 2 explores the application of transfer learning by replacing only the output layer of a pretrained CNN multiclass classification model.
+
+Figure \ref{fig:results} shows the output of experiment 2 in the top right corner. Being trained for 50 epochs in total, the training loss is reduced from 0.4455 to 0.0929. The validation loss starts off even lower with just 0.3355 in the first epoch. Similar to experiment 1, we can see it rapidly moving up and down, though with far smaller peaks. The final loss is 0.1224.
+
+
+\section{Discussion}
+The results of this assignment show the implications of transfer learning.
+
+In experiment 1, the initial loss in both validation and training set were bigger than 0.5. Since the CNN model was initialized with random weights, it took 14 epochs in total before training loss and validation loss could be reduced to less than 0.3. After 25 epochs, the training loss seems to be stable at about 0.1, while the validation loss seems to still fluctuate between 0.24 and 0.13.
+
+Contrarily, both losses in experiment 2 are less than 0.45 in the first epoch
+since the weights in all but the last layer have been optimized on a similar dataset before. We can see that the validation loss is also much more stable. The only apparent disadvantage is that the training loss takes more epochs to converge to the same value. The model in experiment 1 achieves a training loss of 0.1031 in epoch 25, whereas the model from experiment 2 only achieves a loss of 0.1299 at that epoch.
 \end{document}
