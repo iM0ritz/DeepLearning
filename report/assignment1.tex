@@ -146,27 +146,52 @@
 \section{Results}
 
 \begin{figure}[htbp]
-\centerline{\includegraphics[width=\columnwidth]{resources/logs.png}}
+\centerline{\includegraphics[width=\columnwidth]{resources/logs1.png}}
+\centerline{\includegraphics[width=\columnwidth]{resources/logs2.png}}
 \caption{Training and validation loss for all experiments.}
 \label{fig:results}
 \end{figure}
 
 \subsection{Experiment 1}
-The first experiment concerns itself with the training of a simple CNN model used for binary classification of cat and dog images. This sets a baseline performance for the following experiments, which make use of transfer learning.
+The first experiment concerns itself with the training of a simple CNN model used for binary classification of cat and dog images. This sets a baseline performance for the following experiments, which make use of Transfer Learning.
 
 The top left plot in Figure \ref{fig:results} visualizes the training process of this experiment. In epoch 1, the model achieves a training loss of about 0.5855. The loss gradually decreases until the last epoch, where it ends up at 0.1031. The validation loss starts at 0.8795, then reaches 0.2780 in epoch 5, and finally zig-zags with a slight downwards trend before it ends up at 0.1312 in epoch 25.
 
+The final training and validation accuracies are 0.9580 and 0.9453.
+
 \subsection{Experiment 2}
-The model for experiment 2 explores the application of transfer learning by replacing only the output layer of a pretrained CNN multiclass classification model.
+The model for experiment 2 explores the application of Transfer Learning by replacing only the output layer of the pretrained CNN classifier.
 
 Figure \ref{fig:results} shows the output of experiment 2 in the top right corner. Being trained for 50 epochs in total, the training loss is reduced from 0.4455 to 0.0929. The validation loss starts off even lower with just 0.3355 in the first epoch. Similar to experiment 1, we can see it rapidly moving up and down, though with far smaller peaks. The final loss is 0.1224.
 
+The final training and validation accuracies are 0.9610 and 0.9543.
+
+\subsection{Experiment 3}
+The model for experiment 3 explores the application of Transfer Learning by replacing the first two convolutional layers and the output layer of the pretrained CNN classification model.
+
+Figure \ref{fig:results} shows the output of experiment 3 in the bottom left corner. We can see that the performance significantly worsened. The training loss could only be reduced to 0.1884. The final validation loss is 0.2129. It can also be seen that the decrease of the validation loss is much less stable over the epochs.
+
+The final training and validation accuracies are 0.9185 and 0.9116
+
+\subsection{Experiment 4}
+The model for experiment 4 explores the application of Transfer Learning by replacing the last two convolutional layers and the output layer of the preatrained CNN classifier. 
+
+Figure \ref{fig:results} shows the output of experiment 4 in the bottom right corner. In terms of training loss, the model performs very similarly to the model of experiment 2, with a final loss of 0.0979. The validation loss however increased overall and could only be reduced to 0.1436 in epoch 50.
+
+The final training and validation accuracies are 0.9604 and 0.9502
 
 \section{Discussion}
-The results of this assignment show the implications of transfer learning.
+The results of this assignment show the implications of Transfer Learning.
 
 In experiment 1, the initial loss in both validation and training set were bigger than 0.5. Since the CNN model was initialized with random weights, it took 14 epochs in total before training loss and validation loss could be reduced to less than 0.3. After 25 epochs, the training loss seems to be stable at about 0.1, while the validation loss seems to still fluctuate between 0.24 and 0.13.
 
 Contrarily, both losses in experiment 2 are less than 0.45 in the first epoch
-since the weights in all but the last layer have been optimized on a similar dataset before. We can see that the validation loss is also much more stable. The only apparent disadvantage is that the training loss takes more epochs to converge to the same value. The model in experiment 1 achieves a training loss of 0.1031 in epoch 25, whereas the model from experiment 2 only achieves a loss of 0.1299 at that epoch.
+since the weights in all but the last layer have been optimized on a similar dataset before. We can see that the validation loss is also much more stable. The final performance of this model is slightly better than the original model. This shows that the standard application of Transfer Learning - only replacing the output layer - works well if used on a similar dataset. 
+
+Replacing only the output layer and transferring the pretrained weights for all the other layers slightly decreased the training and validation loss and increased the model accuracy in experiment 2. In experiment 3, in addition to the output layer, the first two convolutional layers were replaced. This worsened the performance of the model. Given how CNNs work, this result is expected. The later layers learned and are heavily dependent on the outputs of the earlier layers. Freshly initializing them destroys this dependency.
+
+In experiment 4, we replaced the last two convolutional layers and the output layer. The results show that this model performs similarly well to the model from experiment 2. This shows that freshly initializing the last two convolutional layers keeps model performance in tact because no dependencies that were previously learned get broken. One explanation why this model performed slightly worse than model 2 in validation could be that this model had to re-learn the complex features of the classes on top of the classification which requires more effort. 
+
+\section{Conclusion}
+This experiment shows that early layers of CNNs learning general features are highly dependent on each other, while late layers are task specific and adaptable. Transfer Learning works well for re-using the general features learned in the early layers and adapting the late layers and outputs to a similar task. Re-initializing early layers will break the learned dependencies and lead to a worse model performance.
 \end{document}
