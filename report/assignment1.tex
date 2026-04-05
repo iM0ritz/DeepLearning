@@ -171,19 +171,19 @@ The model for experiment 3 explores the application of Transfer Learning by repl
 
 Figure \ref{fig:results} shows the output of experiment 3 in the bottom left corner. We can see that the performance significantly worsened. The training loss could only be reduced to 0.1884. The final validation loss is 0.2129. It can also be seen that the decrease of the validation loss is much less stable over the epochs.
 
-The final training and validation accuracies are 0.9185 and 0.9116
+The final training and validation accuracies are 0.9185 and 0.9116.
 
 \subsection{Experiment 4}
 The model for experiment 4 explores the application of Transfer Learning by replacing the last two convolutional layers and the output layer of the preatrained CNN classifier. 
 
 Figure \ref{fig:results} shows the output of experiment 4 in the bottom right corner. In terms of training loss, the model performs very similarly to the model of experiment 2, with a final loss of 0.0979. The validation loss however increased overall and could only be reduced to 0.1436 in epoch 50.
 
-The final training and validation accuracies are 0.9604 and 0.9502
+The final training and validation accuracies are 0.9604 and 0.9502.
 
 \section{Discussion}
 The results of this assignment show the implications of Transfer Learning.
 
-In experiment 1, the initial loss in both validation and training set were bigger than 0.5. Since the CNN model was initialized with random weights, it took 14 epochs in total before training loss and validation loss could be reduced to less than 0.3. After 25 epochs, the training loss seems to be stable at about 0.1, while the validation loss seems to still fluctuate between 0.24 and 0.13.
+In experiment 1, the initial loss in both validation and training set were bigger than 0.5. Since the CNN model was initialized with random weights, it took 14 epochs in total before training loss and validation loss could be reduced to less than 0.3. After 25 epochs, the training loss seems to be stable at about 0.1, while the validation loss still fluctuates between 0.24 and 0.13.
 
 Contrarily, both losses in experiment 2 are less than 0.45 in the first epoch
 since the weights in all but the last layer have been optimized on a similar dataset before. We can see that the validation loss is also much more stable. The final performance of this model is slightly better than the original model. This shows that the standard application of Transfer Learning - only replacing the output layer - works well if used on a similar dataset. 
