@@ -11,16 +11,17 @@ data/
 !model.keras
 
 # ignore core latex/pdflatex auxiliary files:
-report/**/*.aux
-report/**/*.lof
-report/**/*.log
-report/**/*.lot
-report/**/*.fls
-report/**/*.out
-report/**/*.toc
-report/**/*.fmt
-report/**/*.fot
-report/**/*.cb
-report/**/*.cb2
-report/**/.*.lb
-report/**/*.synctex.gz
+**/report/**/*.aux
+**/report/**/*.lof
+**/report/**/*.log
+**/report/**/*.lot
+**/report/**/*.fls
+**/report/**/*.out
+**/report/**/*.toc
+**/report/**/*.fmt
+**/report/**/*.fot
+**/report/**/*.cb
+**/report/**/*.cb2
+**/report/**/.*.lb
+**/report/**/*.synctex.gz
+**/report/**/*.fdb_latexmk
