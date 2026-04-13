@@ -5,4 +5,4 @@
 #SBATCH --time=04:00:00
 #SBATCH --partition priority
 
-python ass2exp0/base_code.py data/spa-eng/
+python ass2exp0/train.py data/spa-eng/
