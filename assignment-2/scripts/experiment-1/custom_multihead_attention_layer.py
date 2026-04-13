@@ -4,24 +4,6 @@ from keras import ops
 
 class CustomMultiHeadAttention(layers.Layer):
 
-    # TODO: start out with simple word embeddings
-    # Initialize a matrix for "Query" and "Key" (how big are they exactly? i think they need to have a n*n size where n is the length of a token embedding vector.)
-    # Create Query and Key Vector for every token by taking multiplying token embedding and the matrix
-    # for every query and every key, take dot product to see how much they align and divide result by sqrt(dimension of the query key space)
-    # iterate through each token query and create softmax over all token keys.
-    # Create Value vectors for every token using the Value Matrix.
-    # For value resulting value vectors with the softmax values for every token
-    # for every token, compute sum of updated softmax (query-key) matrix.
-    # add sum to the current token embedding
-
-    # we need to make use of cross-attention, because we have two completely different texts (spanish and english)
-    # Queries should come from english and keys from spanish
-
-    # for every head, we then once again add the sum of all attention heads to the embedding
-    # if we have N heads, the matrices will all be reduced from dimensionality d to d/N.
-
-    # This layer first projects query, key and value. These are (effectively) a list of tensors of length num_attention_heads, where the corresponding shapes are (batch_size, <query dimensions>, key_dim), (batch_size, <key/value dimensions>, key_dim), (batch_size, <key/value dimensions>, value_dim).
-
     def __init__(
         self,
         num_heads,
@@ -64,8 +46,41 @@ class CustomMultiHeadAttention(layers.Layer):
             trainable=True
         )
 
-    def call(self, query, value, key):
-        pass
+    def call(self, inputs):
+        attention_output = self.compute_attention_scores(inputs)
+        return attention_output
+    
+    def compute_attention_scores(self, inputs):
+        batch_size = ops.shape(inputs)[0]
 
-    def compute_attention_scores(self, instance):
-        pass
+        q = ops.matmul(inputs, self.Wq) 
+        k = ops.matmul(inputs, self.Wk)
+        v = ops.matmul(inputs, self.Wv)
+
+        # reshape matrices to calculate matmuls for all attention heads at the same time
+        q = self._split_heads(q, batch_size)
+        k = self._split_heads(k, batch_size)
+        v = self._split_heads(v, batch_size)
+
+        # main logic from transformer paper
+        scores = ops.matmul(q, ops.transpose(k, (0, 1, 3, 2)))
+        dk = self.key_dim / self.num_heads
+        scaled_scores = scores / ops.sqrt(dk)
+        weights = ops.softmax(scaled_scores)
+        attention_output = ops.matmul(weights, v)
+
+        # reshape back
+        joined_output = self._join_heads(attention_output, batch_size)
+
+        return ops.matmul(joined_output, self.Wo)
+
+    def _split_heads(self, x, batch_size):
+        # reshape from (batch_size, seq_len, embed_dim) to (batch_size, num_heads, seq_len, head_dim)
+        head_dim = self.key_dim // self.num_heads
+        x = ops.reshape(x, (batch_size, -1, self.num_heads, head_dim))
+        return ops.transpose(x, (0, 2, 1, 3))
+    
+    def _join_heads(self, x, batch_size):
+        # reshape from (batch_size, num_heads, seq_len, head_dim) back to (batch_size, seq_len, embed_dim)
+        x = ops.transpose(x, (0, 2, 1,3 ))
+        return ops.reshape(x, (batch_size, -1, self.key_dim))

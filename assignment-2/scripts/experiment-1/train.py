@@ -141,9 +141,7 @@ class TransformerEncoder(layers.Layer):
         else:
             padding_mask = None
 
-        attention_output = self.attention(
-            query=inputs, value=inputs, key=inputs
-        )
+        attention_output = self.attention(inputs)
         proj_input = self.layernorm_1(inputs + attention_output)
         proj_output = self.dense_proj(proj_input)
         return self.layernorm_2(proj_input + proj_output)
