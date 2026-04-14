@@ -9,18 +9,18 @@ def parse_log_file(file_path):
         with open(file_path, 'r') as f:
             lines = f.readlines()
         
-        losses = []
-        val_losses = []
+        accs = []
+        val_accs = []
         for line in lines:
             if 'loss:' in line:
-                loss_match = re.search(r' - loss: (\d+\.\d+)', line)
-                val_loss_match = re.search(r' - val_loss: (\d+\.\d+)', line)
-                if loss_match and val_loss_match:
-                    losses.append(float(loss_match.group(1)))
-                    val_losses.append(float(val_loss_match.group(1)))
+                acc_match = re.search(r'accuracy: (\d+\.\d+)', line)
+                val_acc_match = re.search(r' - val_accuracy: (\d+\.\d+)', line)
+                if acc_match and val_acc_match:
+                    accs.append(float(acc_match.group(1)))
+                    val_accs.append(float(val_acc_match.group(1)))
         
-        epochs = list(range(1, len(losses) + 1))
-        return epochs, losses, val_losses
+        epochs = list(range(1, len(accs) + 1))
+        return epochs, accs, val_accs
     except Exception as e:
         print(f"Error parsing {file_path}: {e}")
         return [], [], []
