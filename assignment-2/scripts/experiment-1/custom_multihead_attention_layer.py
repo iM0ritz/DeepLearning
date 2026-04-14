@@ -11,6 +11,7 @@ class CustomMultiHeadAttention(layers.Layer):
         **kwargs):
         super().__init__(**kwargs)
 
+        self.supports_masking = True
         self.num_heads = num_heads
         self.key_dim = key_dim
 
@@ -46,11 +47,11 @@ class CustomMultiHeadAttention(layers.Layer):
             trainable=True
         )
 
-    def call(self, inputs):
-        attention_output = self.compute_attention_scores(inputs)
+    def call(self, inputs, mask):
+        attention_output = self.compute_attention_scores(inputs, mask)
         return attention_output
     
-    def compute_attention_scores(self, inputs):
+    def compute_attention_scores(self, inputs, mask):
         batch_size = ops.shape(inputs)[0]
 
         q = ops.matmul(inputs, self.Wq) 
@@ -66,6 +67,13 @@ class CustomMultiHeadAttention(layers.Layer):
         scores = ops.matmul(q, ops.transpose(k, (0, 1, 3, 2)))
         dk = self.key_dim / self.num_heads
         scaled_scores = scores / ops.sqrt(dk)
+        if mask is not None:
+            # match mask dimensions to score dimensions to apply mask
+            while len(ops.shape(mask)) < len(ops.shape(scaled_scores)):
+                mask = ops.expand_dims(mask, axis=1)
+            # mask is 1 for real data, 0 for padding.
+            # we want to add -1e9 to where the mask is 0.
+            scaled_scores = ops.where(mask, scaled_scores, -1e9)
         weights = ops.softmax(scaled_scores)
         attention_output = ops.matmul(weights, v)
 
