@@ -450,7 +450,7 @@ transformer = keras.Model(
     name="transformer",
 )
 
-epochs = 1  # This should be at least 30 for convergence
+epochs = 50  # This should be at least 30 for convergence
 
 callbacks = [
     keras.callbacks.ModelCheckpoint("save_at_{epoch}.keras"),
