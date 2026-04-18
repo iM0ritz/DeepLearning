@@ -27,6 +27,11 @@ from keras import layers
 from keras import ops
 from keras.layers import TextVectorization
 
+from custom_multihead_attention_layer import CustomMultiHeadAttention
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+
 current_dir = os.getcwd()
 
 # text_file = keras.utils.get_file(
@@ -76,6 +81,86 @@ vocab_size = 15000
 sequence_length = 20
 batch_size = 64
 
+def plot_attention_weights(sentence, model, vectorizer):
+    # 1. Prepare the input data
+    # Add batch dimension
+    tokens = vectorizer([sentence]) 
+    
+    # 2. Extract the specific layers we need from the trained model
+    pos_embed_layer = model.get_layer("encoder_embeddings")
+    encoder_layer = model.get_layer("transformer_encoder")
+    
+    # 3. Run a forward pass to get the scores (eager execution)
+    embedded_tokens = pos_embed_layer(tokens)
+    mask = pos_embed_layer.compute_mask(tokens)
+    
+    _, attention_scores = encoder_layer(
+        embedded_tokens, 
+        mask=mask, 
+        return_attention_scores=True
+    )
+    
+    # attention_scores shape is (batch_size, num_heads, seq_len, seq_len)
+    # We select the first batch, and the first head (index 0)
+    head_0_scores = attention_scores[0, 0, :, :].numpy()
+    
+    # 4. Get the actual words for our axes, ignoring padding (0)
+    vocab = vectorizer.get_vocabulary()
+    token_indices = tokens[0].numpy()
+    words = [vocab[idx] for idx in token_indices if idx != 0]
+    
+    # Crop the attention matrix to the actual sequence length (remove padding rows/cols)
+    seq_len = len(words)
+    head_0_scores = head_0_scores[:seq_len, :seq_len]
+    
+    # 5. Plot the heatmap
+    plt.figure(figsize=(8, 6))
+    ax = sns.heatmap(
+        head_0_scores, 
+        xticklabels=words, 
+        yticklabels=words, 
+        cmap="viridis",
+        cbar_kws={'label': 'Attention Weight'}
+    )
+    
+    plt.title("Self-Attention Weights (Encoder - Head 1)")
+    plt.xlabel("Key Tokens (Attending to)")
+    plt.ylabel("Query Tokens (Attending from)")
+    
+    # Rotate the x-axis labels for better readability
+    plt.xticks(rotation=45, ha='right')
+    plt.tight_layout()
+    
+    safe_filename = sentence.replace(" ", "_").replace(".", "").replace("¿", "").replace("?", "")
+    save_path = f"attention_{safe_filename}.png"
+    
+    plt.savefig(save_path, dpi=300, bbox_inches='tight')
+    print(f"Attention plot saved to: {save_path}")
+    
+    plt.close()
+
+class CustomLogSaver(keras.callbacks.Callback):
+    def __init__(self, filepath):
+        super().__init__()
+        self.filepath = filepath
+        # Create or clear the file when training starts
+        with open(self.filepath, 'w') as f:
+            pass 
+
+    def on_epoch_end(self, epoch, logs=None):
+        logs = logs or {}
+        # Format the string exactly as you requested
+        log_string = (
+            f"accuracy: {logs.get('accuracy', 0):.4f} - "
+            f"loss: {logs.get('loss', 0):.4f} - "
+            f"val_accuracy: {logs.get('val_accuracy', 0):.4f} - "
+            f"val_loss: {logs.get('val_loss', 0):.4f}\n"
+        )
+        
+        # Append to the file
+        with open(self.filepath, 'a') as f:
+            f.write(log_string)
+
 def custom_standardization(input_string):
     lowercase = tf_strings.lower(input_string)
     return tf_strings.regex_replace(lowercase, "[%s]" % re.escape(strip_chars), "")
@@ -116,28 +201,6 @@ def make_dataset(pairs):
     dataset = dataset.map(format_dataset)
     return dataset.cache().shuffle(2048).prefetch(16)
 
-class CustomLogSaver(keras.callbacks.Callback):
-    def __init__(self, filepath):
-        super().__init__()
-        self.filepath = filepath
-        # Create or clear the file when training starts
-        with open(self.filepath, 'w') as f:
-            pass 
-
-    def on_epoch_end(self, epoch, logs=None):
-        logs = logs or {}
-        # Format the string exactly as you requested
-        log_string = (
-            f"accuracy: {logs.get('accuracy', 0):.4f} - "
-            f"loss: {logs.get('loss', 0):.4f} - "
-            f"val_accuracy: {logs.get('val_accuracy', 0):.4f} - "
-            f"val_loss: {logs.get('val_loss', 0):.4f}\n"
-        )
-        
-        # Append to the file
-        with open(self.filepath, 'a') as f:
-            f.write(log_string)
-
 train_ds = make_dataset(train_pairs)
 val_ds = make_dataset(val_pairs)
 
@@ -153,7 +216,7 @@ class TransformerEncoder(layers.Layer):
         self.embed_dim = embed_dim
         self.dense_dim = dense_dim
         self.num_heads = num_heads
-        self.attention = layers.MultiHeadAttention(
+        self.attention = CustomMultiHeadAttention(
             num_heads=num_heads, key_dim=embed_dim
         )
         self.dense_proj = keras.Sequential(
@@ -166,18 +229,32 @@ class TransformerEncoder(layers.Layer):
         self.layernorm_2 = layers.LayerNormalization()
         self.supports_masking = True
 
-    def call(self, inputs, mask=None):
+    def build(self, input_shape):
+        self.attention.build(input_shape)
+
+        super().build(input_shape)
+
+    def call(self, inputs, mask=None, return_attention_scores=False):
         if mask is not None:
             padding_mask = ops.cast(mask[:, None, :], dtype="int32")
         else:
             padding_mask = None
 
-        attention_output = self.attention(
-            query=inputs, value=inputs, key=inputs, attention_mask=padding_mask
-        )
+        # Conditionally retrieve the attention scores
+        if return_attention_scores:
+            attention_output, attention_scores = self.attention(
+                inputs, padding_mask, return_attention_scores=True
+            )
+        else:
+            attention_output = self.attention(inputs, padding_mask)
+
         proj_input = self.layernorm_1(inputs + attention_output)
         proj_output = self.dense_proj(proj_input)
-        return self.layernorm_2(proj_input + proj_output)
+        final_output = self.layernorm_2(proj_input + proj_output)
+        
+        if return_attention_scores:
+            return final_output, attention_scores
+        return final_output
 
     def get_config(self):
         config = super().get_config()
@@ -348,8 +425,8 @@ latent_dim = 2048
 num_heads = 8
 
 encoder_inputs = keras.Input(shape=(None,), dtype="int64", name="encoder_inputs")
-x = PositionalEmbedding(sequence_length, vocab_size, embed_dim)(encoder_inputs)
-encoder_outputs = TransformerEncoder(embed_dim, latent_dim, num_heads)(x)
+x = PositionalEmbedding(sequence_length, vocab_size, embed_dim, name="encoder_embeddings")(encoder_inputs)
+encoder_outputs = TransformerEncoder(embed_dim, latent_dim, num_heads, name="transformer_encoder")(x)
 
 decoder_inputs = keras.Input(shape=(None,), dtype="int64", name="decoder_inputs")
 encoded_seq_inputs = keras.Input(shape=(None, embed_dim), name="decoder_state_inputs")
@@ -377,7 +454,7 @@ epochs = 1  # This should be at least 30 for convergence
 
 callbacks = [
     keras.callbacks.ModelCheckpoint("save_at_{epoch}.keras"),
-    CustomLogSaver("exp-0.txt") # This will save to your project root
+    CustomLogSaver("exp-2.txt") # This will save to your project root
 ]
 
 transformer.summary()
@@ -387,3 +464,8 @@ transformer.compile(
     metrics=["accuracy"],
 )
 transformer.fit(train_ds, epochs=epochs, validation_data=val_ds, callbacks=callbacks)
+
+sample_spanish_sentence = val_pairs[0][0] 
+print(f"Plotting attention for: {sample_spanish_sentence}")
+
+plot_attention_weights(sample_spanish_sentence, transformer, eng_vectorization)
