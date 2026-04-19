@@ -146,32 +146,44 @@
 \section{Results}
 
 \begin{figure}[htbp]
-\centerline{\includegraphics[width=\columnwidth]{resources/logs.png}}
+\centerline{\includegraphics[width=\columnwidth]{resources/loss_plots.png}}
 \caption{Training and validation accuracies for experiment 0 and 1 over the duration of the training process.}
 \label{fig:results}
 \end{figure}
 
 \subsection{Experiment 0}
-Experiment 0 concerns itself with the training of a transformer model for the task of english to spanish translation. This sets a baseline performance for the following experiment, which implements a custom multi-head-attention layer.
+Experiment 0 and the following experiments could not be run on the compute server of the university. As a result, we trained on a random subset of 20.000 sentences locally.
 
-The training process of this experiment is shown in figure \ref{fig:results} on the left. In epoch 1, the model achieves a training accuracy of about 0.1165. The accuracy slowly improves until the epoch 30, where it ends up at 0.3103. The validation accuracy starts at 0.21, reaches 0.2589 in epoch 8, and then stagnates. The highest validation accuracy is reached in epoch 16 with a value of 0.2623.
+Experiment 0 concerns itself with the training of a transformer model for the task of Spanish to English translation. This sets a baseline performance for the following experiment, which implements a custom multi-head-attention layer.
+
+The training process of this experiment is shown in figure \ref{fig:results} on the left. In epoch 1, the model achieves a training accuracy of 0.1990. The accuracy slowly improves until epoch 50, where it reaches 0.8622. The validation accuracy starts at 0.2697, reaches 0.5293 in epoch 10, and then stagnates. The highest validation accuracy is reached in epoch 24 with a value of 0.5484.
 
 \subsection{Experiment 1}
-The model for experiment 2 is built on a custom multi-head-attention layer which is used only for the encoder step inside the transformer. The rest of the architecture is identical to that of experiment 0.
+The model for experiment 1 is built on a custom multi-head-attention layer which is used only for the encoder step inside the transformer. The rest of the architecture is identical to that of experiment 0.
 
-Figure \ref{fig:results} shows the output of experiment 1 in the right corner. Being trained for 30 epochs in total, the training accuracy was increased from 0.1196 to 0.3114. The validation accuracy starts off with 0.2111 in the first epoch. Similar to experiment 0, we can see it reaching 0.2591 in epoch 7 and then stopping to improve. The final validation accuracy is 0.2616.
+Figure \ref{fig:results} shows the output of experiment 1 in the right corner. Being trained for 50 epochs in total, the training accuracy was increased from 0.2051 to 0.8602. The validation accuracy starts off with 0.2655 in the first epoch. Similar to experiment 0, we can see it reach an accuracy of 0.5276 in epoch 12, after which it stagnates. The final validation accuracy is 0.5285.
 
 \subsection{Experiment 2}
-todo
+The goal of experiment 2 was to visualize the self attention of the custom multi-head-attention layer for the encoder. 
+
+Figure \ref{fig:attention} shows the encoders attention for the sentence \textit{"La administración toma importantes decisiones."} which translates to \textit{"The administration makes important decisions."}.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=\columnwidth]{resources/attention_La_administración_toma_importantes_decisiones.png}}
+\caption{Attention for translation of the sentence "La administración toma importantes decisiones."}
+\label{fig:attention}
+\end{figure}
+
+We can see two unkown tokens \textit{[UNK]} in the heatmap for \textit{administración} and \textit{decisiones}. This means both of these words were not included in the 15.000-word vocabulary limit set during vectorization. Because of the unknown tokens and short training on the reduced dataset, this particular attention head doesn't provide us with a lot of information. We can see that attention of \textit{la} spikes with \textit{importantes}. That means the model correctly asses a strong relationship of the article with another word. However, in this case the actual relationship is hidden because \textit{administración} is not a known token.
 
 \section{Discussion}
-The goal of this was to show performance differences between the usage of official and custom multi-head-attention layers.
+The goal of this assignment was to show performance differences between the usage of official and custom multi-head-attention layers.
 
-However, we can see that there is almost no difference. The custom implementation performs slightly better for this training run, but that could be the result of a lucky random intialization for the $W^q$, $W^k$, $W^v$, and $W^o$ matrices.
-Moreover, measuring the total time of the training process, we saw that experiment 0 took 1515.8 seconds, while experiment 1 took only 1355.2 seconds.
+However, we can see that there is basically no difference. The official implementation performs slightly better for this training run, but that could be the result of a lucky random initialization for the $W^q$, $W^k$, $W^v$, and $W^o$ matrices.
 
-One of the reasons why our implementation is able to keep with the official implementation, is that we make use of similar optimizations. When using $N$ attention heads, we do not keep $N$ sets of matrices and do not perform our computation $N$ times in total. Instead, we work with one regular set of matrices, as used for single-head-attention, and reshape them before applying the Softmax, so that they act as individual attention heads.
+One of the reasons why our implementation is able to keep up with the official implementation is that we make use of similar optimizations. When using $N$ attention heads, we do not keep $N$ sets of matrices and do not perform our computation $N$ times in total. Instead, we work with one regular set of matrices, as used for single-head-attention, and reshape them before applying the Softmax, so that they act as individual attention heads.
 
 \section{Conclusion}
-todo
+In this assignment we assessed the performance differences between using the official and custom built multi-head-attention layers for a transformer model to do machine translation from Spanish to English. Our findings could not conclude any significant differences between the official and our custom build attention layers. 
+
 \end{document}
