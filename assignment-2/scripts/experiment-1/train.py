@@ -29,10 +29,21 @@ from keras.layers import TextVectorization
 
 from custom_multihead_attention_layer import CustomMultiHeadAttention
 
-data_file = sys.argv[1]
+current_dir = os.getcwd()
 
-with open(data_file, encoding='utf-8') as f:
+# text_file = keras.utils.get_file(
+#     fname="spa-eng.zip",
+#     origin="http://storage.googleapis.com/download.tensorflow.org/data/spa-eng.zip",
+#     extract=True,
+#     cache_dir=current_dir,  # Set the base cache directory to your project folder
+#     cache_subdir="."        # Tell it not to create an extra 'datasets' folder
+# )
+
+text_file = pathlib.Path(current_dir) / "assignment-2" / "spa-eng" / "spa.txt"
+
+with open(text_file, encoding='utf-8') as f:
     lines = f.read().split("\n")[:-1]
+    
 text_pairs = []
 for line in lines:
     eng, spa = line.split("\t")
@@ -43,6 +54,11 @@ for _ in range(5):
     print(random.choice(text_pairs))
 
 random.shuffle(text_pairs)
+
+# Only work with a subset of the data
+subset_size = 20000
+text_pairs = text_pairs[:subset_size]
+
 num_val_samples = int(0.15 * len(text_pairs))
 num_train_samples = len(text_pairs) - 2 * num_val_samples
 train_pairs = text_pairs[:num_train_samples]
@@ -61,6 +77,28 @@ strip_chars = strip_chars.replace("]", "")
 vocab_size = 15000
 sequence_length = 20
 batch_size = 64
+
+class CustomLogSaver(keras.callbacks.Callback):
+    def __init__(self, filepath):
+        super().__init__()
+        self.filepath = filepath
+        # Create or clear the file when training starts
+        with open(self.filepath, 'w') as f:
+            pass 
+
+    def on_epoch_end(self, epoch, logs=None):
+        logs = logs or {}
+        # Format the string exactly as you requested
+        log_string = (
+            f"accuracy: {logs.get('accuracy', 0):.4f} - "
+            f"loss: {logs.get('loss', 0):.4f} - "
+            f"val_accuracy: {logs.get('val_accuracy', 0):.4f} - "
+            f"val_loss: {logs.get('val_loss', 0):.4f}\n"
+        )
+        
+        # Append to the file
+        with open(self.filepath, 'a') as f:
+            f.write(log_string)
 
 def custom_standardization(input_string):
     lowercase = tf_strings.lower(input_string)
@@ -135,16 +173,27 @@ class TransformerEncoder(layers.Layer):
 
         super().build(input_shape)
 
-    def call(self, inputs, mask=None):
+    def call(self, inputs, mask=None, return_attention_scores=False):
         if mask is not None:
             padding_mask = ops.cast(mask[:, None, :], dtype="int32")
         else:
             padding_mask = None
 
-        attention_output = self.attention(inputs, padding_mask)
+        # Conditionally retrieve the attention scores
+        if return_attention_scores:
+            attention_output, attention_scores = self.attention(
+                inputs, padding_mask, return_attention_scores=True
+            )
+        else:
+            attention_output = self.attention(inputs, padding_mask)
+
         proj_input = self.layernorm_1(inputs + attention_output)
         proj_output = self.dense_proj(proj_input)
-        return self.layernorm_2(proj_input + proj_output)
+        final_output = self.layernorm_2(proj_input + proj_output)
+        
+        if return_attention_scores:
+            return final_output, attention_scores
+        return final_output
 
     def get_config(self):
         config = super().get_config()
@@ -315,8 +364,8 @@ latent_dim = 2048
 num_heads = 8
 
 encoder_inputs = keras.Input(shape=(None,), dtype="int64", name="encoder_inputs")
-x = PositionalEmbedding(sequence_length, vocab_size, embed_dim)(encoder_inputs)
-encoder_outputs = TransformerEncoder(embed_dim, latent_dim, num_heads)(x)
+x = PositionalEmbedding(sequence_length, vocab_size, embed_dim, name="encoder_embeddings")(encoder_inputs)
+encoder_outputs = TransformerEncoder(embed_dim, latent_dim, num_heads, name="transformer_encoder")(x)
 
 decoder_inputs = keras.Input(shape=(None,), dtype="int64", name="decoder_inputs")
 encoded_seq_inputs = keras.Input(shape=(None, embed_dim), name="decoder_state_inputs")
@@ -340,10 +389,11 @@ transformer = keras.Model(
     name="transformer",
 )
 
-epochs = 1  # This should be at least 30 for convergence
+epochs = 50  # This should be at least 30 for convergence
 
 callbacks = [
-    keras.callbacks.ModelCheckpoint("save_at_{epoch}.keras")
+    keras.callbacks.ModelCheckpoint("save_at_{epoch}.keras"),
+    CustomLogSaver("exp-1.txt") # This will save to your project root
 ]
 
 transformer.summary()
